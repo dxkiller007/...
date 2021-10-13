@@ -1,0 +1,74 @@
+#include <LiquidCrystal_I2C.h>
+
+#include <DHT.h>
+
+
+#include <Adafruit_Sensor.h>
+
+int speakerPin = 9;
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+int length = 1;
+#define DHT_PIN 7
+#define DHTTYPE DHT11
+#define LED_TOO_COLD A2
+#define LED_PERFECT A1
+#define LED_TOO_HOT A0
+DHT dht(DHT_PIN, DHTTYPE);
+void setup() {
+  Serial.begin(9600);
+  lcd.println("DHT11 test!");
+
+ lcd.init();
+  lcd.clear();
+  lcd.backlight();
+  dht.begin();
+}
+
+void loop() {
+  pinMode(speakerPin, OUTPUT);
+  pinMode (A0 , OUTPUT);
+  pinMode (A1 , OUTPUT);
+  pinMode (A2 , OUTPUT);
+  
+  delay(2000);
+
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  float f = dht.readTemperature(true);
+
+
+  if (isnan(h) || isnan(t) || isnan(f)) {
+    lcd.println("Failed to read from DHT sensor!");
+    return;
+  }
+
+ lcd.print("Humidity: ");
+  lcd.print(h);
+
+  lcd.print("Temperature: ");
+  lcd.print(t);
+ 
+  if (t <= 20) {
+ 
+    digitalWrite(A2, HIGH);
+    digitalWrite(speakerPin, HIGH);
+    delay (300);
+    digitalWrite(speakerPin, LOW);
+    digitalWrite(A2, LOW);
+  }
+  if (20 < t < 27) {
+    
+    digitalWrite(A1, HIGH);
+    delay (100);
+    digitalWrite(A1, LOW);
+  }
+  if (t >= 29) {
+    
+    digitalWrite(A0, HIGH);
+    digitalWrite(speakerPin, HIGH);
+    delay (200);
+    digitalWrite(speakerPin, LOW);
+    digitalWrite(A0, LOW);
+  }
+
+}
